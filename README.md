@@ -12,3 +12,7 @@ A Java implementation of Ricart-Agrawala Algorithm using JGroups
 * Reply method
 * Queues and State updates
 * Tests
+
+_Ricart-Agrawala Algorithm diagram_
+
+![RicartAgrawalaAlgorithmDiagram](https://www.cs.rutgers.edu/~pxk/417/notes/images/mutex-ricart.png)
