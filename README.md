@@ -9,18 +9,16 @@ A Java implementation of Ricart-Agrawala Algorithm using JGroups
 
 ### What is working?
 * Send messages to cluster (request method)
-* Receive messages (receive method). Receives logicalClock
+* Receive messages (receive method). Receives PeerInfo object
+* LogicalClock synchronization
+* Replies
+* Queues and State updates
 
 ### What needs to be done?
-* Synchronize logicalClock across Peer's
-* Reply method
-* Queues and State updates
+* After leaving CriticalSection reply to all Requests by the lowest logicalClock
+* Graphic Interface with real time updates
 * Tests
-=======
-* Synchronize logicalClock acrosss Peer's
-* Reply method
-* Queues and State updates
-* Tests
+* Report
 
 _Ricart-Agrawala Algorithm diagram_
 
