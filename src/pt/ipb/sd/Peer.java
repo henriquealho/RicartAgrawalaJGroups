@@ -114,13 +114,13 @@ public class Peer extends ReceiverAdapter {
 			if (msg.getDest() == null) { // If request, add to Request Queue
 
 				// Once ReqQ.contains(peerInfo) does not work as we want...
-				boolean contains = false;
+				boolean containsSelfPeer = false;
 				for (PeerInfo item : ReqQ) {
 					if (peerInfo.getGuid().equals(item.getGuid())) {
-						contains = true;
+						containsSelfPeer = true;
 					}
 				}
-				if (!contains) {
+				if (!containsSelfPeer) {
 					ReqQ.add(peerInfo);
 				}
 			}
@@ -161,17 +161,21 @@ public class Peer extends ReceiverAdapter {
 				// Reply to Requester's, gives priority to lowest logicalClock
 				// NEEDS TO GIVE PRIORITY TO LOWEST LOGICALCLOCK <<<<<<
 				if (!this.ReqQ.isEmpty()) {
-					for (PeerInfo item : this.ReqQ) {
-						if (item.getGuid().equals(this.peerInfo.getGuid())) {
-							// this.ReqQ.remove(item);
-						} else {
-							reply(item.getAddress(), this.peerInfo);
-							// this.ReqQ.remove(item);
+					this.ReqQ.remove(this.peerInfo);
+					while (!this.ReqQ.isEmpty()) {
+						peerInfo = this.ReqQ.getFirst();
+						
+						// Obtains Peer with lowest logicalClock
+						for (PeerInfo item : ReqQ) {
+							if (item.getLogicalClock() < peerInfo.getLogicalClock()) {
+								peerInfo = item;
+							}
 						}
+						this.ReqQ.remove(peerInfo);
+						reply(peerInfo.getAddress(), this.peerInfo);						
 					}
 				}
 				// Clear Queues
-				this.ReqQ.clear();
 				this.AckQ.clear();
 			}
 		}
@@ -180,19 +184,20 @@ public class Peer extends ReceiverAdapter {
 		else { // If in Critical Section, add to Request Queue
 
 			// Once ReqQ.contains(peerInfo) does not work as we want...
-			boolean contains = false;
+			boolean containsSelfPeer = false;
 			for (PeerInfo item : ReqQ) {
 				if (peerInfo.getGuid().equals(item.getGuid())) {
-					contains = true;
+					containsSelfPeer = true;
 				}
 			}
-			if (!contains) {
+			if (!containsSelfPeer) {
 				ReqQ.add(peerInfo);
 			}
 		}
 	}
 
-	// Message reply method, sends message to SrcAddress and PeerInfo from SrcAddress
+	// Message reply method, sends message to SrcAddress and PeerInfo from
+	// SrcAddress
 	public void reply(Address msgSrcAddress, PeerInfo peerInfo) {
 		Message msg = new Message(msgSrcAddress, peerInfo);
 		try {
