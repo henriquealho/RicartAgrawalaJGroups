@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.jgroups.Address;
 
 @SuppressWarnings("serial")
-public class PeerInfo implements Comparable<PeerInfo>, Serializable{
+public class PeerInfo implements Serializable{
 
 	long logicalClock;
 	String guid;
@@ -37,14 +37,8 @@ public class PeerInfo implements Comparable<PeerInfo>, Serializable{
 		this.guid = guid;
 	}
 	
+	// Allows direct increment to logical Clock in Peer
 	public void incrementLogicalClock() {
 		this.logicalClock++;
-	}
-	
-	public int compareTo(PeerInfo comparePeerInfo) {
-		int compareLogicalClock = (int) comparePeerInfo.getLogicalClock();
-		
-		// Descending order
-		return (int) (compareLogicalClock - this.logicalClock);
 	}
 }
