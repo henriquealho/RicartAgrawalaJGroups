@@ -49,7 +49,7 @@ public class Peer extends ReceiverAdapter {
 		Message msg = new Message(null, null, this.peerInfo);
 		try {
 			channel.send(msg);
-			this.peerInfo.incrementLogicalClock();
+			incrementLogicalClock();
 
 		} catch (Exception e) {
 			System.out.println("ERROR: Could not send message to Cluster.\nException: " + e);
@@ -60,8 +60,7 @@ public class Peer extends ReceiverAdapter {
 	@Override
 	public void receive(Message msg) {
 
-		this.peerInfo.incrementLogicalClock();
-		System.out.println(this.peerInfo.getGuid() + ": " + this.state + ", Clock: " + this.peerInfo.getLogicalClock());
+		incrementLogicalClock();
 
 		// Obtain PeerInfo from message
 		PeerInfo peerInfo = (PeerInfo) msg.getObject();
@@ -88,14 +87,12 @@ public class Peer extends ReceiverAdapter {
 					AckQ.add(peerInfo);
 				}
 
-				this.state = State.waiting;
-				System.out.println(
-						this.peerInfo.getGuid() + ": " + this.state + ", Clock: " + this.peerInfo.getLogicalClock());
-
+				setState(State.waiting);
+				
 			} else {
 				// If is self Peer, change state to waiting and Reply to itself
 				if (peerInfo.getGuid().equals(this.peerInfo.getGuid())) {
-					this.state = State.waiting;
+					setState(State.waiting);
 					reply(msg.getSrc(), this.peerInfo);
 				} else {
 					// If is another Peer, reply
@@ -146,25 +143,22 @@ public class Peer extends ReceiverAdapter {
 			 */
 			if (this.numberOfPeersInCluster == AckQ.size()) {
 
-				this.state = State.inCriticalSection;
-				System.out.println(
-						this.peerInfo.getGuid() + ": " + this.state + ", Clock: " + this.peerInfo.getLogicalClock());
+				setState(State.inCriticalSection);
+
 				try {
 					Thread.sleep(5000); // Simulate a Critical Section
 				} catch (InterruptedException e) {
 					System.out.println("Could not sleep.\nException: " + e);
 				}
-				this.state = State.ready;
-				System.out.println(
-						this.peerInfo.getGuid() + ": " + this.state + ", Clock: " + this.peerInfo.getLogicalClock());
 
+				setState(State.ready);
+				
 				// Reply to Requester's, gives priority to lowest logicalClock
-				// NEEDS TO GIVE PRIORITY TO LOWEST LOGICALCLOCK <<<<<<
 				if (!this.ReqQ.isEmpty()) {
 					this.ReqQ.remove(this.peerInfo);
 					while (!this.ReqQ.isEmpty()) {
 						peerInfo = this.ReqQ.getFirst();
-						
+
 						// Obtains Peer with lowest logicalClock
 						for (PeerInfo item : ReqQ) {
 							if (item.getLogicalClock() < peerInfo.getLogicalClock()) {
@@ -172,7 +166,7 @@ public class Peer extends ReceiverAdapter {
 							}
 						}
 						this.ReqQ.remove(peerInfo);
-						reply(peerInfo.getAddress(), this.peerInfo);						
+						reply(peerInfo.getAddress(), this.peerInfo);
 					}
 				}
 				// Clear Queues
@@ -202,10 +196,14 @@ public class Peer extends ReceiverAdapter {
 		Message msg = new Message(msgSrcAddress, peerInfo);
 		try {
 			channel.send(msg);
-			this.peerInfo.incrementLogicalClock();
+			incrementLogicalClock();
 		} catch (Exception e) {
 			System.out.println("Could not send reply message.\nException: " + e);
 		}
+	}
+
+	public void refresh() {
+		System.out.println(this.peerInfo.getGuid() + ": " + this.state + ", Clock: " + this.peerInfo.getLogicalClock());
 	}
 
 	// Getters and Setters
@@ -223,6 +221,7 @@ public class Peer extends ReceiverAdapter {
 
 	public void setState(State state) {
 		this.state = state;
+		refresh();
 	}
 
 	public PeerInfo getPeerInfo() {
@@ -255,5 +254,10 @@ public class Peer extends ReceiverAdapter {
 
 	public void setNumberOfPeersInCluster(long numberOfPeersInCluster) {
 		this.numberOfPeersInCluster = numberOfPeersInCluster;
+	}
+
+	public void incrementLogicalClock() {
+		this.peerInfo.incrementLogicalClock();
+		refresh();
 	}
 }
