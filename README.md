@@ -15,3 +15,5 @@ This is an implementation of Ricart-Agrawala Algorithm in Java, using JGroups
 _Ricart-Agrawala Algorithm diagram_
 
 ![RicartAgrawalaAlgorithmDiagram](https://www.cs.rutgers.edu/~pxk/417/notes/images/mutex-ricart.png)
+
+Feel free to contribute or use this as you want!
